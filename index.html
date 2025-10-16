@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keycloak Authentication Demo</title>
+    <!-- Load Keycloak JS Adapter -->
+    <script src="https://cdn.jsdelivr.net/npm/keycloak-js@24.0.3/dist/keycloak.min.js"></script>
+    <style>
+        /* Custom font import */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        #app {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-radius: 0.75rem;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        
+        header p {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        
+        #status-card {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 2px dashed #d1d5db;
+            margin-bottom: 1.5rem;
+        }
+        
+        #status-card.border-green {
+            border-color: #10b981;
+        }
+        
+        #status-card.border-red {
+            border-color: #ef4444;
+        }
+        
+        #status-card h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        #auth-status {
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: #4b5563;
+        }
+        
+        #user-details-card {
+            background-color: #eef2ff;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        #user-details-card.hidden {
+            display: none;
+        }
+        
+        #user-details-card h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #4f46e5;
+            margin-bottom: 1rem;
+        }
+        
+        #user-details-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        #user-info {
+            font-size: 0.875rem;
+        }
+        
+        #user-info p {
+            margin-bottom: 0.25rem;
+        }
+        
+        #user-info strong {
+            font-weight: 600;
+        }
+        
+        #access-token-snippet {
+            display: block;
+            background-color: #e0e7ff;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-family: monospace;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        #login-btn {
+            background-color: #16a34a;
+            color: white;
+            margin-bottom: 0.75rem;
+        }
+        
+        #login-btn:hover {
+            background-color: #15803d;
+        }
+        
+        #login-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.3);
+        }
+        
+        #logout-btn {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        #logout-btn:hover {
+            background-color: #dc2626;
+        }
+        
+        #logout-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.3);
+        }
+        
+        #logout-btn.hidden {
+            display: none;
+        }
+        
+        #login-btn.hidden {
+            display: none;
+        }
+        
+        #copy-token-btn {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #4f46e5;
+            font-weight: 500;
+            background: none;
+            border: none;
+            padding: 0;
+            width: auto;
+            box-shadow: none;
+            cursor: pointer;
+        }
+        
+        #copy-token-btn:hover {
+            color: #4338ca;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+
+        <header>
+            <h1>Keycloak JS Demo</h1>
+            <p>Single Page Application Authentication Flow</p>
+        </header>
+
+        <!-- Status Section -->
+        <div id="status-card">
+            <h2>Authentication Status</h2>
+            <p id="auth-status">Initializing...</p>
+        </div>
+
+        <!-- User Details Section (Hidden until logged in) -->
+        <div id="user-details-card" class="hidden">
+            <h2>User Information</h2>
+            <div id="user-info">
+                <p><strong>Username:</strong> <span id="username">N/A</span></p>
+                <p><strong>Keycloak ID:</strong> <span id="user-id">N/A</span></p>
+                <p><strong>Email:</strong> <span id="email">N/A</span></p>
+            </div>
+
+            <div>
+                <h3>Access Token (Snippet)</h3>
+                <code id="access-token-snippet">Token will appear here...</code>
+                <button id="copy-token-btn">Copy Full Token</button>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div>
+            <button id="login-btn" onclick="keycloakLogin()">
+                Log In
+            </button>
+            <button id="logout-btn" onclick="keycloakLogout()" class="hidden">
+                Log Out
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Keycloak Configuration ---
+        // !!! IMPORTANT: REPLACE THESE PLACEHOLDERS WITH YOUR ACTUAL KEYCLOAK DETAILS !!!
+        const keycloakConfig = {
+            url: 'http://localhost:8080/auth', // E.g., 'https://auth.mycompany.com/'
+            realm: 'myrealm',                // E.g., 'my-company-production'
+            clientId: 'myclient',         // E.g., 'my-web-app'
+        };
+
+        // Initialize Keycloak
+        const keycloak = new Keycloak(keycloakConfig);
+
+        // --- Utility Functions ---
+
+        /**
+         * Safely copies text to the clipboard.
+         * @param {string} text - The text to copy.
+         */
+        function copyToClipboard(text) {
+            try {
+                // Use the older execCommand for better compatibility in various environments
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                console.log('Token copied to clipboard.');
+            } catch (err) {
+                console.error('Could not copy text: ', err);
+            }
+        }
+
+        /**
+         * Updates the UI based on the Keycloak authentication state.
+         * @param {boolean} isAuthenticated - True if the user is logged in.
+         */
+        function updateUI(isAuthenticated) {
+            const statusEl = document.getElementById('auth-status');
+            const statusCard = document.getElementById('status-card');
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const detailsCard = document.getElementById('user-details-card');
+
+            if (isAuthenticated) {
+                // UI for Logged In State
+                statusEl.textContent = 'Authenticated!';
+                statusCard.classList.remove('border-red');
+                statusCard.classList.add('border-green');
+
+                loginBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                detailsCard.classList.remove('hidden');
+
+                // Load and display user data
+                keycloak.loadUserInfo().then(userInfo => {
+                    document.getElementById('username').textContent = userInfo.preferred_username || 'N/A';
+                    document.getElementById('user-id').textContent = keycloak.subject || 'N/A';
+                    document.getElementById('email').textContent = userInfo.email || 'N/A';
+                });
+
+                // Display token
+                const token = keycloak.token;
+                document.getElementById('access-token-snippet').textContent = token ? `${token.substring(0, 50)}...` : 'Token not found.';
+
+                // Setup copy functionality
+                document.getElementById('copy-token-btn').onclick = () => {
+                    if (token) {
+                        copyToClipboard(token);
+                        document.getElementById('copy-token-btn').textContent = 'Copied!';
+                        setTimeout(() => document.getElementById('copy-token-btn').textContent = 'Copy Full Token', 1500);
+                    }
+                };
+
+            } else {
+                // UI for Logged Out State
+                statusEl.textContent = 'Not Authenticated';
+                statusCard.classList.remove('border-green');
+                statusCard.classList.add('border-red');
+
+                loginBtn.classList.remove('hidden');
+                logoutBtn.classList.add('hidden');
+                detailsCard.classList.add('hidden');
+
+                // Clear user data
+                document.getElementById('username').textContent = 'N/A';
+                document.getElementById('user-id').textContent = 'N/A';
+                document.getElementById('email').textContent = 'N/A';
+                document.getElementById('access-token-snippet').textContent = 'Token will appear here...';
+            }
+        }
+
+        // --- Keycloak Actions ---
+
+        /**
+         * Initiates the Keycloak login flow.
+         */
+        function keycloakLogin() {
+            // Options include 'redirectUri', 'locale', and 'prompt'
+            keycloak.login();
+        }
+
+        /**
+         * Initiates the Keycloak logout flow.
+         */
+        function keycloakLogout() {
+            // Redirects to the logout page and then back to the home page (or a specified URL)
+            keycloak.logout();
+        }
+
+        // --- Initialization ---
+
+        window.onload = function() {
+            // Keycloak Init options
+            const initOptions = {
+                // Use 'login-required' to automatically redirect to login if not authenticated,
+                // or 'check-sso' to silently check for an existing session.
+                // onLoad: 'check-sso',
+                // Setting this to false prevents potential CORS/iframe issues in some environments.
+                checkLoginIframe: false,
+            };
+
+            console.log('Keycloak Initializing...');
+            keycloak.init(initOptions)
+                .then(isAuthenticated => {
+                    console.log(`Keycloak Initialized. Authenticated: ${isAuthenticated}`);
+                    updateUI(isAuthenticated);
+
+                    // Optional: Set up token refreshing if logged in
+                    if (isAuthenticated) {
+                        // Refresh token every 5 minutes (300 seconds)
+                        setInterval(() => {
+                            keycloak.updateToken(300)
+                                .then(refreshed => {
+                                    if (refreshed) {
+                                        console.log('Token successfully refreshed.');
+                                    } else {
+                                        console.log('Token not refreshed, still valid.');
+                                    }
+                                })
+                                .catch(() => {
+                                    console.error('Failed to refresh token.');
+                                    // Handle failure (e.g., automatically log out if session expired)
+                                });
+                        }, 60000); // Check every minute (60000ms)
+                    }
+                })
+                .catch(error => {
+                    console.error('Keycloak Init Failed', error);
+                    document.getElementById('auth-status').textContent = 'Error: Keycloak connection failed.';
+                    document.getElementById('status-card').classList.add('border-red');
+                });
+        };
+        
+        // Ensure Keycloak is loaded before initializing
+        if (typeof Keycloak === 'undefined') {
+            console.error('Keycloak library not loaded!');
+            document.getElementById('auth-status').textContent = 'Error: Keycloak library failed to load.';
+        }
+    </script>
+</body>
+</html>
