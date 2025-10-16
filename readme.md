@@ -12,3 +12,5 @@ From a terminal, enter the following command to start Keycloak:
 This command starts Keycloak exposed on the local port 8080 and creates an initial admin user with the username admin and password admin.
 
 ---
+
+GET <http://localhost:8080/auth/realms/myrealm/protocol/openid-connect/auth?clie…nge=mNBFZJujuz_BL_Ky-BzbW_GjjtCz68EdH3IT68fn790&code_challenge_method=S256> 404 (Not Found)
