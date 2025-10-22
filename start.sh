@@ -44,7 +44,7 @@ echo "   4. Create client: 'my-spa-client' (public, redirect URI: http://localho
 echo "   5. Create user: 'testuser' with password 'password'"
 echo ""
 echo "🌐 Start the demo app:"
-echo "   python3 -m http.server 3000"
+echo "   (cd demo-js && python3 -m http.server 3000)"
 echo ""
 echo "🛑 To stop Keycloak:"
 echo "   docker stop keycloak-demo"

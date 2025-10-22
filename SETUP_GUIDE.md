@@ -6,7 +6,7 @@
 
 - Docker installed on your system
 - A web browser
-- The `index.html` file in your project
+- The `index.html` and `example.js` files in your project
 
 ---
 
@@ -138,7 +138,7 @@ You need to serve the HTML file via HTTP (not just open it as a file). Use one o
 
 ```bash
 # Python 3
-python3 -m http.server 3000
+(cd demo-js && python3 -m http.server 3000)
 
 # Python 2
 python -m SimpleHTTPServer 3000
@@ -151,13 +151,13 @@ python -m SimpleHTTPServer 3000
 npm install -g http-server
 
 # Run
-http-server -p 3000
+(cd demo-js && http-server -p 3000)
 ```
 
 ### Option C: PHP Built-in Server
 
 ```bash
-php -S localhost:3000
+php -S localhost:3000 -t demo-js
 ```
 
 ---
