@@ -1,0 +1,5 @@
+
+http://localhost:8080/realms/myrealm/protocol/openid-connect/auth?state=1b324dea1e7fb4da154472148f8651fd&scope=profile%20email%20openid&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2Findex.php&client_id=php-app
+
+
+

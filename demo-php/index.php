@@ -1,7 +1,25 @@
 <?php
 require_once 'config.php';
 
+// Step 1: Redirect to Keycloak for authentication
+if (isset($_GET['login'])) {
+    $authUrl = $keycloak->getAuthorizationUrl();
+    $_SESSION['oauth2state'] = $keycloak->getState();
+    header('Location: ' . $authUrl);
+    exit;
+}
+
+// Step 2: Handle the callback from Keycloak
 if (isset($_GET['code'])) {
+    // Verify state to prevent CSRF attacks
+    if (empty($_GET['state']) || empty($_SESSION['oauth2state']) || $_GET['state'] !== $_SESSION['oauth2state']) {
+        unset($_SESSION['oauth2state']);
+        die('Invalid state parameter');
+    }
+    
+    // Clear the state from session
+    unset($_SESSION['oauth2state']);
+    
     try {
         $token = $keycloak->getAccessToken('authorization_code', [
             'code' => $_GET['code']
@@ -59,7 +77,7 @@ if (isset($_SESSION['token'])) {
             <a href="logout.php">Logout</a>
         <?php else: ?>
             <p>You are not authenticated.</p>
-            <a href="<?php echo $keycloak->getAuthorizationUrl(); ?>">Login with Keycloak</a>
+            <a href="?login=1">Login with Keycloak</a>
         <?php endif; ?>
     </div>
 </body>
