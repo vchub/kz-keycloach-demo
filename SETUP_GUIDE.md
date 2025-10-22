@@ -20,7 +20,7 @@ docker run -d \
   -p 8080:8080 \
   -e KEYCLOAK_ADMIN=admin \
   -e KEYCLOAK_ADMIN_PASSWORD=admin \
-  quay.io/keycloak/keycloak:24.0.3 \
+  quay.io/keycloak/keycloak:26.4.0 \
   start-dev
 ```
 
@@ -39,7 +39,7 @@ docker run -d \
 docker logs -f keycloak-demo
 ```
 
-Look for a message like: `Keycloak 24.0.3 on JVM ... started in ...ms`
+Look for a message like: `Keycloak 26.4.0 on JVM ... started in ...ms`
 
 Press `Ctrl+C` to exit logs.
 
@@ -260,7 +260,7 @@ docker run -d \
   -e KC_DB_URL=jdbc:postgresql://your-db-host/keycloak \
   -e KC_DB_USERNAME=keycloak \
   -e KC_DB_PASSWORD=password \
-  quay.io/keycloak/keycloak:24.0.3 \
+  quay.io/keycloak/keycloak:26.4.0 \
   start-dev
 ```
 

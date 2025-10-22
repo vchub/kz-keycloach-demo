@@ -10,7 +10,7 @@ docker run -d \
   -p 8080:8080 \
   -e KEYCLOAK_ADMIN=admin \
   -e KEYCLOAK_ADMIN_PASSWORD=admin \
-  quay.io/keycloak/keycloak:24.0.3 \
+  quay.io/keycloak/keycloak:26.4.0 \
   start-dev
 
 echo ""
