@@ -9,6 +9,16 @@ if (isset($_GET['login'])) {
     exit;
 }
 
+// Step 1b: Redirect to Keycloak registration page
+if (isset($_GET['register'])) {
+    $authUrl = $keycloak->getAuthorizationUrl([
+        'kc_action' => 'REGISTER'
+    ]);
+    $_SESSION['oauth2state'] = $keycloak->getState();
+    header('Location: ' . $authUrl);
+    exit;
+}
+
 // Step 2: Handle the callback from Keycloak
 if (isset($_GET['code'])) {
     // Verify state to prevent CSRF attacks
@@ -77,7 +87,10 @@ if (isset($_SESSION['token'])) {
             <a href="logout.php">Logout</a>
         <?php else: ?>
             <p>You are not authenticated.</p>
-            <a href="?login=1">Login with Keycloak</a>
+            <div style="margin-top: 20px;">
+                <a href="?login=1" style="display: inline-block; padding: 10px 20px; background-color: #0066cc; color: white; text-decoration: none; border-radius: 4px; margin-right: 10px;">Login with Keycloak</a>
+                <a href="?register=1" style="display: inline-block; padding: 10px 20px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px;">Create Account</a>
+            </div>
         <?php endif; ?>
     </div>
 </body>
